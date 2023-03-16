@@ -1,53 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import ErrorAlert from '../components/ErrorAlert';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 import Container from '../components/Container';
-import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
-
-const useBookData = (bookId) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(`https://api.matgargano.com/api/books/${bookId}`);
-        setData(response.data);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [bookId]);
-
-  return [data, loading, error];
-};
+import "./Style.css"
 
 const Book = () => {
-  const { bookId } = useParams();
-  const [data, loading, error] = useBookData(bookId);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+    const [book, setBook] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const {id} = useParams();
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+    const getData = async () => {
+        const url = `https://api.matgargano.com/api/books/${id}`;
+        setLoading(true);
+        setError(false);
+        try {
+            const request = await fetch(url);
+            const response = await request.json();
+            setBook(response);
+           
+        } catch(e) {
+            setError('Error: ' + e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
 
-  return (
+    useEffect(() => {
+        getData();
+    }, []);
+
+
+    return (
     <Container>
-      <Link to="/">Back to Books</Link>
-      <h1>{data.title}</h1>
-      <p>Author: {data.author}</p>
-      <p>Description: {data.description}</p>
-      {/* display other relevant book data */}
-    </Container>
-    
-  );
+        {error && <ErrorAlert>{error}</ErrorAlert>}
+        {!error && loading && <div className="max-w-[230px]"><Skeleton count="10" /></div>}
+        {!error && !loading && 
+            <>
+            {book && (
+             <div>
+                <p>TITLE: {book.title}</p>
+                <p>AUTHOR: {book.author}</p>
+                <p>PUBLISHER: {book.publisher}</p>
+                <p>Year {book.year}</p>
+                <p>Number Of Pages: {book.pages}</p>
+                <p>Country Origin: {book.country}</p>
+                <img  src={book.imageURL} alt="" />
+                  
+                </div>
+            )} 
+
+            </>  
+            
+        }
+         </Container>
+    );
 };
 
 export default Book;

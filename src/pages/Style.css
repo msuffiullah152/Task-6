@@ -1,0 +1,10 @@
+body{
+    background-color:rgb(0, 126, 126);
+}
+p{
+    color: black;
+    font-weight: bold;
+    font-style: italic;
+    padding: 10px;
+
+}
